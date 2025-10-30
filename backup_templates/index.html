@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto mt-10">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">All Books</h2>
+        <a href="{{ url_for('add_book') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            + Add Book
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-4">
+          {% for category, message in messages %}
+            <div class="p-3 mb-2 rounded text-white {{ 'bg-green-500' if category=='success' else 'bg-red-500' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <table class="min-w-full border border-gray-300">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="py-2 px-4 border-b">ID</th>
+                <th class="py-2 px-4 border-b">Title</th>
+                <th class="py-2 px-4 border-b">Author</th>
+                <th class="py-2 px-4 border-b">Year</th>
+                <th class="py-2 px-4 border-b">Genre</th>
+                <th class="py-2 px-4 border-b">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr class="text-center">
+                <td class="py-2 px-4 border-b">{{ book.id }}</td>
+                <td class="py-2 px-4 border-b">{{ book.title }}</td>
+                <td class="py-2 px-4 border-b">{{ book.author }}</td>
+                <td class="py-2 px-4 border-b">{{ book.year or '' }}</td>
+                <td class="py-2 px-4 border-b">{{ book.genre or '' }}</td>
+                <td class="py-2 px-4 border-b">
+                    <a href="{{ url_for('edit_book', book_id=book.id) }}" class="bg-yellow-400 hover:bg-yellow-600 text-white py-1 px-3 rounded mr-1">Edit</a>
+                    <form action="{{ url_for('delete_book', book_id=book.id) }}" method="POST" class="inline">
+                        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
