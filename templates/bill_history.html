@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4 text-blue-600">Bill History</h2>
+
+    {% if bills %}
+    <div class="overflow-x-auto bg-white shadow rounded">
+        <table class="min-w-full border border-gray-300">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="py-2 px-4 border-b text-left">Book</th>
+                    <th class="py-2 px-4 border-b text-left">Quantity</th>
+                    <th class="py-2 px-4 border-b text-left">Total</th>
+                    <th class="py-2 px-4 border-b text-left">Date</th>
+                    <th class="py-2 px-4 border-b text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for bill in bills %}
+                <tr class="hover:bg-gray-100">
+                    <td class="py-2 px-4 border-b">{{ bill.book.title }}</td>
+                    <td class="py-2 px-4 border-b">{{ bill.quantity }}</td>
+                    <td class="py-2 px-4 border-b">Rs. {{ bill.total_price }}</td>
+                    <td class="py-2 px-4 border-b">{{ bill.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="py-2 px-4 border-b">
+                        <form method="POST" action="{{ url_for('delete_bill', bill_id=bill.id) }}" 
+                              onsubmit="return confirm('Delete this bill?');">
+                            <button class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-gray-600">No bills yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

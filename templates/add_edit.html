@@ -38,12 +38,13 @@
         </div>
 
         <div class="mb-4">
-            {{ form.genre.label(class_="block text-gray-700 font-bold mb-2") }}
-            {{ form.genre(class_="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline") }}
-            {% for error in form.genre.errors %}
-                <p class="text-red-500 text-xs italic">{{ error }}</p>
-            {% endfor %}
+            {{ form.price.label }}<br>
+            {{ form.price(size=20) }}
         </div>
+        <br>
+        
+
+        
 
         <div class="flex items-center justify-between">
             {{ form.submit(class_="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded") }}

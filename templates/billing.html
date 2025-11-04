@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6">
+    <h2 class="text-2xl font-bold mb-4 text-blue-600">Billing System</h2>
+
+    <form method="POST">
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2">Select Book</label>
+            <select name="book_id" id="bookSelect" class="shadow border rounded w-full py-2 px-3">
+                {% for book in books %}
+                <option value="{{ book.id }}" data-price="{{ book.price }}"
+                {% if selected_book_id == book.id %}selected{% endif %}>
+                    {{ book.title }} - Rs. {{ book.price }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2">Quantity</label>
+            <input type="number" name="quantity" id="qtyInput" min="1" value="1"
+                   class="shadow border rounded w-full py-2 px-3">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-bold mb-2">Total Price</label>
+            <input type="text" id="totalPrice" readonly
+                   class="shadow border rounded w-full py-2 px-3"
+                   value="0.00">
+        </div>
+
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Save Bill
+        </button>
+
+        {% if message %}
+        <p class="text-green-600 font-bold mt-3">{{ message }}</p>
+        {% endif %}
+    </form>
+</div>
+
+<script>
+    function updateTotal() {
+        let price = parseFloat(document.getElementById("bookSelect")
+                      .selectedOptions[0].getAttribute("data-price"));
+        let qty = parseInt(document.getElementById("qtyInput").value);
+        document.getElementById("totalPrice").value = (price * qty).toFixed(2);
+    }
+
+    document.getElementById("bookSelect").addEventListener("change", updateTotal);
+    document.getElementById("qtyInput").addEventListener("input", updateTotal);
+    updateTotal();
+</script>
+
+{% endblock %}

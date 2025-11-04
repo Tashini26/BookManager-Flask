@@ -18,20 +18,39 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Book model
+from datetime import datetime
+
 class Book(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    author = db.Column(db.String(150), nullable=False)
-    year = db.Column(db.Integer, nullable=True)
-    genre = db.Column(db.String(100), nullable=True)
+    title = db.Column(db.String(100), nullable=False)
+    author = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    genre = db.Column(db.String(100))  # ✅ Add this line
+    price = db.Column(db.Float, nullable=False)
+
+# Bill model
+class Bill(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+
+    # ✅ This is the ONLY relationship, and it is correct
+    book = db.relationship('Book', backref='bills')
+
+
 
 # Form for Add/Edit
 class BookForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired(), Length(max=200)])
     author = StringField('Author', validators=[DataRequired(), Length(max=150)])
     year = IntegerField('Year', validators=[Optional(), NumberRange(min=0, max=9999)])
-    genre = StringField('Genre', validators=[Optional(), Length(max=100)])
+    price = IntegerField('Price', validators=[DataRequired(), NumberRange(min=1)])
     submit = SubmitField('Save')
+
 
 # Index route with search and sort
 @app.route('/')
@@ -63,11 +82,12 @@ def add_book():
     form = BookForm()
     if form.validate_on_submit():
         book = Book(
-            title=form.title.data.strip(),
-            author=form.author.data.strip(),
-            year=form.year.data,
-            genre=form.genre.data.strip() if form.genre.data else None
-        )
+    title=form.title.data.strip(),
+    author=form.author.data.strip(),
+    year=form.year.data,
+    price=form.price.data
+)
+
         try:
             db.session.add(book)
             db.session.commit()
@@ -78,6 +98,43 @@ def add_book():
         return redirect(url_for('index'))
     return render_template('add_edit.html', form=form, action='Add')
 
+@app.route('/billing', methods=['GET', 'POST'])
+def billing():
+    books = Book.query.all()
+    selected_book_id = request.args.get('book_id', type=int)
+
+    if request.method == 'POST':
+        selected_book_id = request.form.get('book_id', type=int)
+        quantity = request.form.get('quantity', type=int)
+        book = Book.query.get(selected_book_id)
+        total_price = quantity * book.price
+
+        bill = Bill(book_id=selected_book_id, quantity=quantity, total_price=total_price)
+        db.session.add(bill)
+        db.session.commit()
+
+      
+        return render_template('billing.html', books=books, message="Bill saved successfullyyy!")
+       
+
+    return render_template('billing.html', books=books, selected_book_id=selected_book_id)
+
+
+@app.route('/bills')
+def bill_history():
+    bills = Bill.query.order_by(Bill.created_at.desc()).all()
+    return render_template('bill_history.html', bills=bills)
+
+@app.route('/bills/delete/<int:bill_id>', methods=['POST'])
+def delete_bill(bill_id):
+    bill = Bill.query.get_or_404(bill_id)
+    db.session.delete(bill)
+    db.session.commit()
+    flash('Bill deleted successfully!', 'success')
+    return redirect(url_for('bill_history'))
+
+
+
 # Edit book
 @app.route('/edit/<int:book_id>', methods=['GET', 'POST'])
 def edit_book(book_id):
@@ -87,7 +144,8 @@ def edit_book(book_id):
         book.title = form.title.data.strip()
         book.author = form.author.data.strip()
         book.year = form.year.data
-        book.genre = form.genre.data.strip() if form.genre.data else None
+        book.price = form.price.data 
+
         try:
             db.session.commit()
             flash('Book updated successfully.', 'success')
@@ -110,6 +168,9 @@ def delete_book(book_id):
         flash(f'Error deleting book: {e}', 'error')
     return redirect(url_for('index'))
 
+    
+
+# Seed sample data safely
 # Seed sample data safely
 def seed_data():
     try:
@@ -117,17 +178,18 @@ def seed_data():
             db.create_all()
             if Book.query.count() == 0:
                 sample_books = [
-                    Book(title='To Kill a Mockingbird', author='Harper Lee', year=1960, genre='Fiction'),
-                    Book(title='1984', author='George Orwell', year=1949, genre='Dystopian'),
-                    Book(title='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, genre='Classic'),
-                    Book(title='Pride and Prejudice', author='Jane Austen', year=1813, genre='Romance'),
-                    Book(title='The Hobbit', author='J.R.R. Tolkien', year=1937, genre='Fantasy')
+                    Book(title='To Kill a Mockingbird', author='Harper Lee', year=1960, price=1200.00),
+                    Book(title='1984', author='George Orwell', year=1949,  price=1500.00),
+                    Book(title='The Great Gatsby', author='F. Scott Fitzgerald', year=1925, price=1100.00),
+                    Book(title='Pride and Prejudice', author='Jane Austen', year=1813, price=900.00),
+                    Book(title='The Hobbit', author='J.R.R. Tolkien', year=1937, price=1800.00)
                 ]
                 db.session.bulk_save_objects(sample_books)
                 db.session.commit()
-        print("Database seeded successfully.")
+        print("✅ Database seeded successfully with sample books!")
     except Exception as e:
-        print("Error seeding database:", e)
+        print("❌ Error seeding database:", e)
+
 
 # Call seed_data safely
 seed_data()

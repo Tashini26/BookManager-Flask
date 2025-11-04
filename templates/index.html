@@ -15,7 +15,7 @@
         <form method="GET" class="flex flex-1 gap-2">
             <input type="text" name="search" placeholder="Search by title or author"
                    value="{{ search }}" class="flex-1 border border-gray-300 rounded px-3 py-2">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded" >
                 Search
             </button>
         </form>
@@ -33,6 +33,17 @@
             + Add Book
         </a>
     </div>
+
+    <a href="{{ url_for('billing') }}"
+   class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+    💳 Billing
+</a>
+<br><br>
+<a href="{{ url_for('bill_history') }}"
+   class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+   🧾 Bill History
+</a>
+<br><br>
 
     <!-- Flash messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -56,7 +67,7 @@
                 <th class="py-2 px-4 border-b text-left">Title</th>
                 <th class="py-2 px-4 border-b text-left">Author</th>
                 <th class="py-2 px-4 border-b text-left">Year</th>
-                <th class="py-2 px-4 border-b text-left">Genre</th>
+                <th class="py-2 px-4 border-b text-left">Price</th>
                 <th class="py-2 px-4 border-b text-left">Actions</th>
             </tr>
             </thead>
@@ -67,10 +78,14 @@
                     <td class="py-2 px-4 border-b">{{ book.title }}</td>
                     <td class="py-2 px-4 border-b">{{ book.author }}</td>
                     <td class="py-2 px-4 border-b">{{ book.year or '-' }}</td>
-                    <td class="py-2 px-4 border-b">{{ book.genre or '-' }}</td>
+                    <td class="py-2 px-4 border-b">Rs.{{ book.price or '-' }}</td>
+
                     <td class="py-2 px-4 border-b flex gap-2">
                         <a href="{{ url_for('edit_book', book_id=book.id) }}"
                            class="bg-yellow-400 hover:bg-yellow-500 text-white px-2 py-1 rounded">Edit</a>
+                           <a href="{{ url_for('billing', book_id=book.id) }}"
+   class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded">Bill</a>
+
                         <form method="POST" action="{{ url_for('delete_book', book_id=book.id) }}" onsubmit="return confirm('Are you sure?');">
                             <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">Delete</button>
                         </form>
